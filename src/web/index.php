@@ -2,7 +2,48 @@
 require_once './functions.php';
 
 $airports = require './airports.php';
+$count=count($airports);
+$page=1;
+$sort='';
+$state='';
+$let='';
+$pageMin=1;
+$pageMax=10;
+if(isset($_GET['filter_by_first_letter'])){
+    $airports =array_filter($airports, function($a){
+            return ($a['name'][0]  == $_GET['filter_by_first_letter']);
+        });
+    $let='&filter_by_first_letter='.$_GET['filter_by_first_letter'];
+}
+if(isset($_GET['sort_by'])){
+    usort($airports, function($a, $b){
+        return ($a[$_GET['sort_by']] > $b[$_GET['sort_by']]);
+    });
+    $sort='&sort_by='.$_GET['sort_by'];
 
+}
+
+if(isset($_GET['filter_by_state'])){
+    $airports =array_filter($airports, function($a){
+        return ($a['state']  == $_GET['filter_by_state']);
+    });
+    $state='&filter_by_state='.$_GET['filter_by_state'];
+}
+
+if(isset($_GET['page'])){
+    $page=$_GET['page'];      
+    if($page>=10){
+        $pageMin=$page-5;
+        $pageMax=$page+5;
+    }
+    $airports =array_chunk($airports, 5);
+    $count=count($airports);
+    if($pageMax>$count){
+        $pageMax=$count;
+    }
+    
+}
+$url='index.php?page='.$page.$let . $sort . $state;
 // Filtering
 /**
  * Here you need to check $_GET request if it has any filtering
@@ -53,10 +94,10 @@ $airports = require './airports.php';
         Filter by first letter:
 
         <?php foreach (getUniqueFirstLetters(require './airports.php') as $letter): ?>
-            <a href="#"><?= $letter ?></a>
+            <a href='?page=1&filter_by_first_letter=<?= $letter ?><?=$sort?><?=$state?>'  ><?= $letter ?></a>
         <?php endforeach; ?>
 
-        <a href="/" class="float-right">Reset all filters</a>
+        <a href="?page=1" class="float-right">Reset all filters</a>
     </div>
 
     <!--
@@ -72,10 +113,10 @@ $airports = require './airports.php';
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="#">Name</a></th>
-            <th scope="col"><a href="#">Code</a></th>
-            <th scope="col"><a href="#">State</a></th>
-            <th scope="col"><a href="#">City</a></th>
+            <th scope="col"><a href='?page=1<?= $let ?>&sort_by=name<?=$state?>' >Name</a></th>
+            <th scope="col"><a href='?page=1<?= $let ?>&sort_by=code<?=$state?>'>Code</a></th>
+            <th scope="col"><a href='?page=1<?= $let ?>&sort_by=state<?=$state?>'>State</a></th>
+            <th scope="col"><a href='?page=1<?= $let ?>&sort_by=city<?=$state?>'>City</a></th>
             <th scope="col">Address</th>
             <th scope="col">Timezone</th>
         </tr>
@@ -91,11 +132,11 @@ $airports = require './airports.php';
              - when you apply filter_by_state, than filter_by_first_letter (see Filtering task #1) is not reset
                i.e. if you have filter_by_first_letter set you can additionally use filter_by_state
         -->
-        <?php foreach ($airports as $airport): ?>
+        <?php foreach ($airports[$page-1] as $airport): ?>
         <tr>
             <td><?= $airport['name'] ?></td>
             <td><?= $airport['code'] ?></td>
-            <td><a href="#"><?= $airport['state'] ?></a></td>
+            <td><a href="index.php?page=1&<?= $let ?><?=$sort?>&filter_by_state=<?= $airport['state'] ?>"><?= $airport['state'] ?></a></td>
             <td><?= $airport['city'] ?></td>
             <td><?= $airport['address'] ?></td>
             <td><?= $airport['timezone'] ?></td>
@@ -115,9 +156,15 @@ $airports = require './airports.php';
     -->
     <nav aria-label="Navigation">
         <ul class="pagination justify-content-center">
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <?php
+                for ($i=$pageMin; $i < $pageMax+1; $i++) { 
+                    if($i==$page){
+                        echo '<li class="page-item active"><a class="page-link" href="index.php?page='.$i.$let.$sort.$state.'">'.$i. '</a></li>';
+                    }else{
+                        echo '<li class="page-item"><a class="page-link" href="index.php?page='.$i.$let.$sort.$state.'">'.$i  .'</a></li>';
+                    }
+                }
+            ?>
         </ul>
     </nav>
 
