@@ -89,7 +89,9 @@ class Calculator
      */
     public function compute($command, float ...$args)
     {
+        
         $this->intents[] = [$this->getCommand($command), $args];
+
 
         return $this;
     }
@@ -126,7 +128,7 @@ class Calculator
      */
     public function undo()
     {
-        // TODO implement undo logic here
+        array_pop($this->intents);
 
         return $this;
     }
@@ -138,7 +140,9 @@ class Calculator
      */
     public function replay()
     {
-        // TODO implement replay logic here
+        $ind=count($this->intents)-1;
+        $this->intents[]=   $this->intents[$ind];
+        //$this->intents[]=end($this->intents[]);
 
         return $this;
     }

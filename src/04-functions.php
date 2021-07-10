@@ -35,7 +35,9 @@ function sayHelloArgument($arg)
  */
 function sayHelloArgumentWrapper($arg)
 {
-    // put your code here
+    if(!is_string($arg)  && !is_numeric($arg) && !is_bool($arg)){
+        throw new InvalidArgumentException('InvalidArgumentException');
+    }
 
     return sayHelloArgument($arg);
 }
@@ -53,7 +55,7 @@ function countArguments()
         'argument_values' => func_get_args(),
     ];
 }
-
+var_dump(countArguments("dsa","dsa","qwe"));
 /**
  * Fulfill a function countArgumentsWrapper so that it will call the original function (countArguments)
  * but check if all arguments are strings and throws an InvalidArgumentException otherwise
